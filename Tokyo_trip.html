@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tokyo Trip Pro v2.3</title>
+    <style>
+        :root {
+            --apple-bg: #F5F5F7;
+            --apple-card: #FFFFFF;
+            --apple-text: #1D1D1F;
+            --apple-blue: #007AFF;
+            --apple-gray: #8E8E93;
+            --cat-food: #FF9500;
+            --cat-dessert: #FFCC00; /* 甜食 - 黃色 */
+            --cat-fashion: #AF52DE;
+            --cat-beauty: #FF2D55;
+            --cat-stationery: #34C759;
+            --cat-life: #5AC8FA;
+            --cat-transport: #8E8E93;
+            --cat-topup: #5856D6;
+        }
+
+        body {
+            font-family: "Avenir Next", "Avenir", "SF Pro Text", "PingFang TC", sans-serif;
+            background-color: var(--apple-bg);
+            color: var(--apple-text);
+            margin: 0; padding: 20px;
+            display: flex; flex-direction: column; align-items: center;
+        }
+
+        .container { width: 100%; max-width: 500px; }
+        h1 { font-weight: 600; font-size: 24px; margin-bottom: 24px; text-align: center; letter-spacing: -0.5px; }
+
+        .card { background: var(--apple-card); padding: 20px; border-radius: 18px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); margin-bottom: 24px; box-sizing: border-box; }
+        .form-group { margin-bottom: 16px; }
+        label { display: block; font-size: 13px; color: var(--apple-gray); margin-bottom: 6px; margin-left: 4px; }
+        input, select, textarea { width: 100%; padding: 12px; border: 1px solid #D2D2D7; border-radius: 10px; font-size: 16px; box-sizing: border-box; outline: none; background-color: #FFF; -webkit-appearance: none; }
+        button.main-btn { width: 100%; padding: 14px; background-color: var(--apple-blue); color: white; border: none; border-radius: 12px; font-size: 17px; font-weight: 500; cursor: pointer; margin-top: 10px; }
+
+        .summary-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 0.5px solid #F5F5F7; }
+        .summary-item.total-row { border-top: 2px solid #F5F5F7; margin-top: 10px; padding-top: 15px; font-size: 18px; border-bottom: none; }
+        .twd-amount { color: var(--apple-gray); font-size: 12px; font-weight: 400; margin-left: 2px; }
+
+        .category-table-wrapper { width: 100%; overflow-x: auto; margin-top: 15px; -webkit-overflow-scrolling: touch; }
+        table { width: 100%; border-collapse: collapse; min-width: 500px; font-size: 13px; }
+        th { text-align: center; padding: 8px 4px; font-weight: 600; border-bottom: 2px solid transparent; }
+        td { text-align: center; padding: 10px 4px; }
+        
+        .cat-th-food { border-bottom-color: var(--cat-food); }
+        .cat-th-dessert { border-bottom-color: var(--cat-dessert); }
+        .cat-th-fashion { border-bottom-color: var(--cat-fashion); }
+        .cat-th-beauty { border-bottom-color: var(--cat-beauty); }
+        .cat-th-stationery { border-bottom-color: var(--cat-stationery); }
+        .cat-th-life { border-bottom-color: var(--cat-life); }
+        .cat-th-transport { border-bottom-color: var(--cat-transport); }
+        .cat-th-topup { border-bottom-color: var(--cat-topup); }
+
+        .item { background: var(--apple-card); padding: 16px; border-radius: 14px; margin-bottom: 12px; display: flex; flex-direction: column; position: relative; overflow: hidden; }
+        .category-tag { width: 4px; height: 100%; position: absolute; left: 0; top: 0; }
+        .item-main { display: flex; justify-content: space-between; align-items: flex-start; cursor: pointer; }
+        .item-detail-section { margin-top: 12px; padding-top: 12px; border-top: 0.5px solid #F5F5F7; display: none; }
+        .item.expanded .item-detail-section { display: block; }
+        textarea { height: 80px; font-family: inherit; }
+        .receipt-preview { margin-top: 10px; width: 100%; border-radius: 8px; display: none; border: 1px solid #D2D2D7; }
+        .receipt-preview.has-img { display: block; }
+
+        .cat-美食 { background-color: var(--cat-food); } .cat-甜食 { background-color: var(--cat-dessert); }
+        .cat-時尚 { background-color: var(--cat-fashion); } .cat-美妝 { background-color: var(--cat-beauty); }
+        .cat-文具 { background-color: var(--cat-stationery); } .cat-生活 { background-color: var(--cat-life); }
+        .cat-交通 { background-color: var(--cat-transport); } .cat-儲值 { background-color: var(--cat-topup); }
+
+        .btn-text { background: none; border: none; color: var(--apple-blue); font-size: 14px; padding: 5px 0; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Tokyo Trip Pro</h1>
+
+    <div class="card">
+        <div class="form-group"><label>日期</label><input type="date" id="date"></div>
+        <div class="form-group"><label>店名</label><input type="text" id="store" placeholder="店名"></div>
+        <div class="form-group"><label>金額 (JPY)</label><input type="number" id="amount" pattern="[0-9]*" placeholder="0"></div>
+        <div class="form-group">
+            <label>付款方式</label>
+            <select id="card">
+                <option value="中信卡">中信卡</option>
+                <option value="玉山卡">玉山卡</option>
+                <option value="台新卡">台新卡</option>
+                <option value="現金">現金</option>
+                <option value="Suica">Suica (不計入總額)</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>類別</label>
+            <select id="category">
+                <option value="美食">美食</option>
+                <option value="甜食">甜食</option>
+                <option value="時尚">時尚</option>
+                <option value="美妝">美妝</option>
+                <option value="文具">文具</option>
+                <option value="生活">生活</option>
+                <option value="交通">交通</option>
+                <option value="儲值">儲值</option>
+            </select>
+        </div>
+        <button class="main-btn" onclick="addRecord()">新增帳目</button>
+    </div>
+
+    <div class="card">
+        <div class="summary-item"><span>中信卡累計</span><span id="total-ctbc">0 JPY</span></div>
+        <div class="summary-item"><span>玉山卡累計</span><span id="total-esun">0 JPY</span></div>
+        <div class="summary-item"><span>台新卡累計</span><span id="total-taishin">0 JPY</span></div>
+        <div class="summary-item"><span>現金累計</span><span id="total-cash">0 JPY</span></div>
+        <div class="summary-item total-row"><strong>總消費金額</strong><strong id="total-all">0 JPY</strong></div>
+        
+        <div class="category-table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th class="cat-th-food">美食</th><th class="cat-th-dessert">甜食</th><th class="cat-th-fashion">時尚</th>
+                        <th class="cat-th-beauty">美妝</th><th class="cat-th-stationery">文具</th><th class="cat-th-life">生活</th>
+                        <th class="cat-th-transport">交通</th><th class="cat-th-topup">儲值</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr id="category-amounts-jpy">
+                        <td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td>
+                    </tr>
+                    <tr id="category-amounts-twd" style="color:#8E8E93; font-size:11px;">
+                        <td>(0)</td><td>(0)</td><td>(0)</td><td>(0)</td><td>(0)</td><td>(0)</td><td>(0)</td><td>(0)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="history"></div>
+    <div style="text-align:center; color:#8E8E93; font-size:12px; margin-top:40px; text-decoration:underline;" onclick="clearAll()">清除所有資料</div>
+</div>
+
+<script>
+    let records = JSON.parse(localStorage.getItem('tokyo_v5')) || [];
+    document.getElementById('date').valueAsDate = new Date();
+
+    function addRecord() {
+        const amount = parseFloat(document.getElementById('amount').value) || 0;
+        if (amount <= 0) return alert('請輸入金額');
+        const record = {
+            id: Date.now(),
+            date: document.getElementById('date').value,
+            store: document.getElementById('store').value || '未命名',
+            amount: amount,
+            card: document.getElementById('card').value,
+            category: document.getElementById('category').value,
+            note: '', img: ''
+        };
+        records.unshift(record);
+        saveAndRender();
+        document.getElementById('amount').value = '';
+        document.getElementById('store').value = '';
+    }
+
+    function saveAndRender() { localStorage.setItem('tokyo_v5', JSON.stringify(records)); render(); }
+
+    function render() {
+        const historyEl = document.getElementById('history');
+        const sum = { '中信卡': 0, '玉山卡': 0, '台新卡': 0, '現金': 0 };
+        const catSum = { '美食': 0, '甜食': 0, '時尚': 0, '美妝': 0, '文具': 0, '生活': 0, '交通': 0, '儲值': 0 };
+        let totalAll = 0;
+
+        historyEl.innerHTML = '';
+        records.forEach(r => {
+            if (sum.hasOwnProperty(r.card)) { sum[r.card] += r.amount; totalAll += r.amount; }
+            catSum[r.category] += r.amount;
+
+            const div = document.createElement('div');
+            div.className = 'item'; div.id = `item-${r.id}`;
+            div.innerHTML = `
+                <div class="category-tag cat-${r.category}"></div>
+                <div class="item-main" onclick="toggleExpand(${r.id})">
+                    <div><div style="font-weight:600; font-size:16px;">${r.store}</div>
+                    <div style="font-size:12px; color:#8E8E93;">${r.date} · ${r.card} · ${r.category}</div></div>
+                    <div style="text-align:right; font-weight:600;">¥${r.amount.toLocaleString()}<div style="font-size:11px; color:#8E8E93; font-weight:400;">NT$ ${Math.round(r.amount*0.2).toLocaleString()}</div></div>
+                </div>
+                <div class="item-detail-section">
+                    <label>備註</label><textarea onchange="updateField(${r.id}, 'note', this.value)" placeholder="輸入細節...">${r.note || ''}</textarea>
+                    <label style="margin-top:12px;">照片</label><input type="file" accept="image/*" onchange="handleImg(${r.id}, this)">
+                    <img id="img-${r.id}" class="receipt-preview ${r.img ? 'has-img' : ''}" src="${r.img || ''}">
+                    <div style="display:flex; justify-content:space-between; margin-top:15px;"><button class="btn-text" style="color:#FF3B30;" onclick="deleteRecord(${r.id})">刪除</button><button class="btn-text" onclick="toggleExpand(${r.id})">收合</button></div>
+                </div>`;
+            historyEl.appendChild(div);
+        });
+
+        const updateSum = (id, val) => {
+            const twd = Math.round(val * 0.2);
+            document.getElementById(id).innerHTML = `${val.toLocaleString()} JPY <span class="twd-amount">(NT$ ${twd.toLocaleString()})</span>`;
+        };
+        updateSum('total-ctbc', sum['中信卡']); updateSum('total-esun', sum['玉山卡']);
+        updateSum('total-taishin', sum['台新卡']); updateSum('total-cash', sum['現金']);
+        updateSum('total-all', totalAll);
+
+        const catList = ['美食', '甜食', '時尚', '美妝', '文具', '生活', '交通', '儲值'];
+        const jpyRow = document.getElementById('category-amounts-jpy').children;
+        const twdRow = document.getElementById('category-amounts-twd').children;
+        catList.forEach((cat, i) => {
+            jpyRow[i].innerText = catSum[cat].toLocaleString();
+            twdRow[i].innerText = `(${Math.round(catSum[cat] * 0.2).toLocaleString()})`;
+        });
+    }
+
+    function toggleExpand(id) { document.getElementById(`item-${id}`).classList.toggle('expanded'); }
+    function updateField(id, f, v) { const idx = records.findIndex(r => r.id === id); records[idx][f] = v; localStorage.setItem('tokyo_v5', JSON.stringify(records)); }
+    function handleImg(id, input) {
+        if (input.files && input.files[0]) {
+            const r = new FileReader(); r.onload = function(e) {
+                const idx = records.findIndex(rec => rec.id === id); records[idx].img = e.target.result;
+                const imgEl = document.getElementById(`img-${id}`); imgEl.src = e.target.result; imgEl.classList.add('has-img');
+                localStorage.setItem('tokyo_v5', JSON.stringify(records));
+            }; r.readAsDataURL(input.files[0]);
+        }
+    }
+    function deleteRecord(id) { if(confirm('刪除？')) { records = records.filter(r => r.id !== id); saveAndRender(); } }
+    function clearAll() { if(confirm('清除所有？')) { records = []; saveAndRender(); } }
+    render();
+</script>
+</body>
+</html>
